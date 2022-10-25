@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="waimai.dao.ProductDao">
+
+    <resultMap type="waimai.entity.Product" id="ProductMap">
+        <result property="pid" column="pid" jdbcType="INTEGER"/>
+        <result property="dishid" column="dishid" jdbcType="INTEGER"/>
+        <result property="restid" column="restid" jdbcType="INTEGER"/>
+        <!--图片对象-->
+        <result property="image.imgid" column="imgid" jdbcType="INTEGER"></result>
+        <result property="image.imgurl" column="imgurl" jdbcType="VARCHAR"></result>
+        <result property="image.imgtype" column="imgtype" jdbcType="VARCHAR"></result>
+        <!--商品对象-->
+        <result property="dish.dishid" column="dishid"></result>
+        <result property="dish.dishname" column="dishname"></result>
+        <result property="dish.dishprice" column="dishprice"></result>
+        <result property="dish.typename" column="typename"></result>
+        <result property="dish.dishimgid" column="dishimgid"></result>
+    </resultMap>
+
+    <select id="queryProInfoByKeyword" resultMap="ProductMap">
+         SELECT DISTINCT
+
+        d.dishname,
+        d.typename,
+        d.dishimgid,
+        d.dishprice,
+				d.dishid,
+				i.imgurl
+        from product p,waimai.dish d,waimai.image i
+        where
+         d.dishname like #{keyword}
+				 AND d.typename = #{type}
+				 AND d.dishimgid = i.imgid
+    </select>
+    <select id="queryAllByLimitType" resultMap="ProductMap">
+     select
+        d.dishname,
+        d.typename,
+        d.dishimgid,
+        d.dishprice,
+				d.dishid,
+				i.imgurl
+        from waimai.dish d,waimai.image i
+        where
+        d.typename = #{type}
+				AND d.dishimgid = i.imgid
+        limit #{offset}, #{limit}
+
+
+    </select>
+    <select id="queryCountByType" resultType="long">
+        select
+        count(d.dishid)
+        from waimai.dish d
+        where
+        d.typename = #{type}
+    </select>
+    <!--查询对应商家商品-->
+    <select id="queryAllByRest" resultMap="ProductMap">
+        select
+	    i.imgurl,
+	    i.imgid,
+	    i.imgtype,
+        d.dishid,
+        d.dishname,
+        d.dishprice,
+        d.typename,
+        d.dishimgid
+        from waimai.product p,waimai.dish d,image i
+        where p.restid = #{restid}
+        AND p.dishid = d.dishid
+        AND d.dishimgid = i.imgid
+    </select>
+    <!--查询单个-->
+    <select id="queryById" resultMap="ProductMap">
+        select
+        pid, dishid, restid
+        from waimai.product
+        where pid = #{pid}
+    </select>
+
+    <select id="queryByDishId" resultMap="ProductMap">
+        select
+        pid, dishid, restid
+        from waimai.product
+        where dishid = #{dishid}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="ProductMap">
+        select
+        pid, dishid, restid
+        from waimai.product
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="ProductMap">
+        select
+        pid, dishid, restid
+        from waimai.product
+        <where>
+            <if test="pid != null">
+                and pid = #{pid}
+            </if>
+            <if test="dishid != null">
+                and dishid = #{dishid}
+            </if>
+            <if test="restid != null">
+                and restid = #{restid}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="pid" useGeneratedKeys="true">
+        insert into waimai.product(dishid, restid)
+        values (#{dishid}, #{restid})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="pid" useGeneratedKeys="true">
+        insert into waimai.product(dishid, restid)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.dishid}, #{entity.restid})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="pid" useGeneratedKeys="true">
+        insert into waimai.product(dishid, restid)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.dishid}, #{entity.restid})
+        </foreach>
+        on duplicate key update
+        dishid = values(dishid) , restid = values(restid)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update waimai.product
+        <set>
+            <if test="dishid != null">
+                dishid = #{dishid},
+            </if>
+            <if test="restid != null">
+                restid = #{restid},
+            </if>
+        </set>
+        where pid = #{pid}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from waimai.product where pid = #{pid}
+    </delete>
+
+</mapper>
+

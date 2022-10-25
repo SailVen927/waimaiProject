@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="waimai.dao.ImageDao">
+
+    <resultMap type="waimai.entity.Image" id="ImageMap">
+        <result property="imgid" column="imgid" jdbcType="INTEGER"/>
+        <result property="imgurl" column="imgurl" jdbcType="VARCHAR"/>
+        <result property="imgtype" column="imgtype" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="queryByType" resultMap="ImageMap">
+        select
+        imgid, imgurl, imgtype
+        from waimai.image
+        where imgtype = #{type}
+    </select>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="ImageMap">
+        select
+        imgid, imgurl, imgtype
+        from waimai.image
+        where imgid = #{imgid}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="ImageMap">
+        select
+        imgid, imgurl, imgtype
+        from waimai.image
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="ImageMap">
+        select
+        imgid, imgurl, imgtype
+        from waimai.image
+        <where>
+            <if test="imgid != null">
+                and imgid = #{imgid}
+            </if>
+            <if test="imgurl != null and imgurl != ''">
+                and imgurl = #{imgurl}
+            </if>
+            <if test="imgtype != null and imgtype != ''">
+                and imgtype = #{imgtype}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="imgid" useGeneratedKeys="true">
+        insert into waimai.image(imgurl, imgtype)
+        values (#{imgurl}, #{imgtype})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="imgid" useGeneratedKeys="true">
+        insert into waimai.image(imgurl, imgtype)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.imgurl}, #{entity.imgtype})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="imgid" useGeneratedKeys="true">
+        insert into waimai.image(imgurl, imgtype)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.imgurl}, #{entity.imgtype})
+        </foreach>
+        on duplicate key update
+        imgurl = values(imgurl) , imgtype = values(imgtype)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update waimai.image
+        <set>
+            <if test="imgurl != null and imgurl != ''">
+                imgurl = #{imgurl},
+            </if>
+            <if test="imgtype != null and imgtype != ''">
+                imgtype = #{imgtype},
+            </if>
+        </set>
+        where imgid = #{imgid}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from waimai.image where imgid = #{imgid}
+    </delete>
+
+</mapper>
+

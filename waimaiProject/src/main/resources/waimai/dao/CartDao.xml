@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="waimai.dao.CartDao">
+
+    <resultMap type="waimai.entity.Cart" id="CartMap">
+        <result property="cid" column="cid" jdbcType="INTEGER"/>
+        <result property="pid" column="pid" jdbcType="INTEGER"/>
+        <result property="ocount" column="ocount" jdbcType="INTEGER"/>
+
+        <result property="product.pid" column="pid" jdbcType="INTEGER"/>
+        <result property="product.dishid" column="dishid" jdbcType="INTEGER"/>
+        <result property="product.restid" column="restid" jdbcType="INTEGER"/>
+
+        <result property="dish.dishid" column="dishid" jdbcType="INTEGER"/>
+        <result property="dish.dishname" column="dishname" jdbcType="VARCHAR"/>
+        <result property="dish.dishprice" column="dishprice" jdbcType="INTEGER"/>
+        <result property="dish.typename" column="typename" jdbcType="VARCHAR"/>
+        <result property="dish.dishimgid" column="dishimgid" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--显示购物车内指定-->
+    <select id="showCart" resultMap="CartMap">
+        SELECT
+        c.cid,
+        c.pid,
+        c.ocount,
+        d.dishid,
+        d.dishname,
+        d.dishprice,
+        d.dishimgid
+        FROM waimai.product p,waimai.cart c,waimai.dish d
+        WHERE p.restid = #{restid}
+        AND p.dishid = #{dishid}
+		AND p.pid = c.pid
+		AND d.dishid = #{dishid}
+    </select>
+    <!--购物车内所有信息-->
+    <select id="showAllCart" resultMap="CartMap">
+       SELECT
+        c.cid,
+        c.pid,
+        c.ocount,
+		p.dishid,
+        d.dishname,
+        d.dishprice,
+        d.dishimgid
+        FROM waimai.cart c,waimai.product p,waimai.dish d
+        WHERE  p.pid = c.pid
+        AND p.pid = c.pid
+				AND d.dishid = p.dishid
+    </select>
+
+    <!--添加商品进入购物车-->
+    <select id="addCart" resultMap="CartMap">
+        insert into waimai.cart(pid,cid,ocount)
+        select (SELECT pid FROM waimai.product WHERE dishid = #{dishid}),#{cid},1
+    </select>
+    <!--查询单个-->
+    <select id="queryById" resultMap="CartMap">
+        select
+        cid, pid, ocount
+        from waimai.cart
+        where cid = #{cid}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="CartMap">
+        select
+        cid, pid, ocount
+        from waimai.cart
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="CartMap">
+        select
+        cid, pid, ocount
+        from waimai.cart
+        <where>
+            <if test="cid != null">
+                and cid = #{cid}
+            </if>
+            <if test="pid != null">
+                and pid = #{pid}
+            </if>
+            <if test="ocount != null">
+                and ocount = #{ocount}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="cid" useGeneratedKeys="true">
+        insert into waimai.cart(pid, ocount)
+        values (#{pid}, #{ocount})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="cid" useGeneratedKeys="true">
+        insert into waimai.cart(pid, ocount)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.pid}, #{entity.ocount})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="cid" useGeneratedKeys="true">
+        insert into waimai.cart(pid, ocount)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.pid}, #{entity.ocount})
+        </foreach>
+        on duplicate key update
+        pid = values(pid) , ocount = values(ocount)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update waimai.cart
+        <set>
+            <if test="pid != null">
+                pid = #{pid},
+            </if>
+            <if test="ocount != null">
+                ocount = #{ocount},
+            </if>
+        </set>
+        where cid = #{cid}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from waimai.cart where cid = #{cid}
+    </delete>
+
+</mapper>
+

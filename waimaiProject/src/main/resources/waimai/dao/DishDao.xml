@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="waimai.dao.DishDao">
+
+    <resultMap type="waimai.entity.Dish" id="DishMap">
+        <result property="dishid" column="dishid" jdbcType="INTEGER"/>
+        <result property="dishname" column="dishname" jdbcType="VARCHAR"/>
+        <result property="dishprice" column="dishprice" jdbcType="INTEGER"/>
+        <result property="typename" column="typename" jdbcType="VARCHAR"/>
+        <result property="dishimgid" column="dishimgid" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="DishMap">
+        select
+        dishid, dishname, dishprice, typename, dishimgid
+        from waimai.dish
+        where dishid = #{dishid}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="DishMap">
+        select
+        dishid, dishname, dishprice, typename, dishimgid
+        from waimai.dish
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="DishMap">
+        select
+        dishid, dishname, dishprice, typename, dishimgid
+        from waimai.dish
+        <where>
+            <if test="dishid != null">
+                and dishid = #{dishid}
+            </if>
+            <if test="dishname != null and dishname != ''">
+                and dishname = #{dishname}
+            </if>
+            <if test="dishprice != null">
+                and dishprice = #{dishprice}
+            </if>
+            <if test="typename != null and typename != ''">
+                and typename = #{typename}
+            </if>
+            <if test="dishimgid != null">
+                and dishimgid = #{dishimgid}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="dishid" useGeneratedKeys="true">
+        insert into waimai.dish(dishname, dishprice, typename, dishimgid)
+        values (#{dishname}, #{dishprice}, #{typename}, #{dishimgid})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="dishid" useGeneratedKeys="true">
+        insert into waimai.dish(dishname, dishprice, typename, dishimgid)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.dishname}, #{entity.dishprice}, #{entity.typename}, #{entity.dishimgid})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="dishid" useGeneratedKeys="true">
+        insert into waimai.dish(dishname, dishprice, typename, dishimgid)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.dishname}, #{entity.dishprice}, #{entity.typename}, #{entity.dishimgid})
+        </foreach>
+        on duplicate key update
+        dishname = values(dishname) , dishprice = values(dishprice) , typename = values(typename) , dishimgid =
+        values(dishimgid)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update waimai.dish
+        <set>
+            <if test="dishname != null and dishname != ''">
+                dishname = #{dishname},
+            </if>
+            <if test="dishprice != null">
+                dishprice = #{dishprice},
+            </if>
+            <if test="typename != null and typename != ''">
+                typename = #{typename},
+            </if>
+            <if test="dishimgid != null">
+                dishimgid = #{dishimgid},
+            </if>
+        </set>
+        where dishid = #{dishid}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from waimai.dish where dishid = #{dishid}
+    </delete>
+
+</mapper>
+

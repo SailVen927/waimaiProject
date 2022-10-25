@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="waimai.dao.RestaurantDao">
+
+    <resultMap type="waimai.entity.Restaurant" id="RestaurantMap">
+        <result property="restid" column="restid" jdbcType="INTEGER"/>
+        <result property="restname" column="restname" jdbcType="VARCHAR"/>
+        <result property="restaddress" column="restaddress" jdbcType="VARCHAR"/>
+        <result property="restintroduce" column="restintroduce" jdbcType="VARCHAR"/>
+        <result property="restell" column="restell" jdbcType="VARCHAR"/>
+        <result property="restype" column="restype" jdbcType="VARCHAR"/>
+        <result property="restimgid" column="restimgid" jdbcType="VARCHAR"/>
+        <result property="servicetime" column="servicetime" jdbcType="VARCHAR"/>
+
+        <!--图片对象-->
+        <result property="image.imgurl" column="imgurl"></result>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="RestaurantMap">
+        select
+        restid, restname, restaddress, restintroduce, restell, restype, restimgid, servicetime
+        from waimai.restaurant r
+        where  r.restid = #{id}
+    </select>
+
+    <!--根据分类查询商家-->
+    <select id="queryAllByType" resultMap="RestaurantMap">
+        select
+        restid, restname, restaddress, restintroduce, restell, restype, restimgid, servicetime
+        from waimai.restaurant r
+        where  r.restype = #{type}
+        limit #{offset},#{limit}
+    </select>
+
+    <select id="queryCount" resultType="Long">
+        select count(restid) from restaurant
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="RestaurantMap">
+        select
+        restid, restname, restaddress, restintroduce, restell, restype, restimgid, servicetime
+        from waimai.restaurant
+        limit #{offset}, #{limit}
+    </select>
+
+
+
+    <!--分类的总条数-->
+    <select id="queryCountByType" resultType="long">
+
+    </select>
+
+    <select id="queryRestInfoByKeyword" resultMap="RestaurantMap">
+        SELECT
+        p.restimgid,
+        p.restype,
+        p.restid,
+        p.servicetime,
+        p.restname,
+        p.restintroduce,
+        p.restaddress,
+        p.restell,
+        i.imgurl imageurl
+        from restaurant p,resttype t,image i
+        where p.restype = t.typename
+        and p.restimgid = i.imgid
+        and t.typename = #{param2}
+        and p.restname like #{param1}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="RestaurantMap">
+        select
+        restid, restname, restaddress, restintroduce, restell, restype, restimgid, servicetime
+        from waimai.restaurant
+        <where>
+            <if test="restid != null">
+                and restid = #{restid}
+            </if>
+            <if test="restname != null and restname != ''">
+                and restname = #{restname}
+            </if>
+            <if test="restaddress != null and restaddress != ''">
+                and restaddress = #{restaddress}
+            </if>
+            <if test="restintroduce != null and restintroduce != ''">
+                and restintroduce = #{restintroduce}
+            </if>
+            <if test="restell != null and restell != ''">
+                and restell = #{restell}
+            </if>
+            <if test="restype != null and restype != ''">
+                and restype = #{restype}
+            </if>
+            <if test="restimgid != null and restimgid != ''">
+                and restimgid = #{restimgid}
+            </if>
+            <if test="servicetime != null and servicetime != ''">
+                and servicetime = #{servicetime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="restid" useGeneratedKeys="true">
+        insert into waimai.restaurant(restname, restaddress, restintroduce, restell, restype, restimgid, servicetime)
+        values (#{restname}, #{restaddress}, #{restintroduce}, #{restell}, #{restype}, #{restimgid}, #{servicetime})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="restid" useGeneratedKeys="true">
+        insert into waimai.restaurant(restname, restaddress, restintroduce, restell, restype, restimgid, servicetime)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.restname}, #{entity.restaddress}, #{entity.restintroduce}, #{entity.restell}, #{entity.restype},
+            #{entity.restimgid}, #{entity.servicetime})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="restid" useGeneratedKeys="true">
+        insert into waimai.restaurant(restname, restaddress, restintroduce, restell, restype, restimgid, servicetime)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.restname}, #{entity.restaddress}, #{entity.restintroduce}, #{entity.restell}, #{entity.restype},
+            #{entity.restimgid}, #{entity.servicetime})
+        </foreach>
+        on duplicate key update
+        restname = values(restname) , restaddress = values(restaddress) , restintroduce = values(restintroduce) ,
+        restell = values(restell) , restype = values(restype) , restimgid = values(restimgid) , servicetime =
+        values(servicetime)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update waimai.restaurant
+        <set>
+            <if test="restname != null and restname != ''">
+                restname = #{restname},
+            </if>
+            <if test="restaddress != null and restaddress != ''">
+                restaddress = #{restaddress},
+            </if>
+            <if test="restintroduce != null and restintroduce != ''">
+                restintroduce = #{restintroduce},
+            </if>
+            <if test="restell != null and restell != ''">
+                restell = #{restell},
+            </if>
+            <if test="restype != null and restype != ''">
+                restype = #{restype},
+            </if>
+            <if test="restimgid != null and restimgid != ''">
+                restimgid = #{restimgid},
+            </if>
+            <if test="servicetime != null and servicetime != ''">
+                servicetime = #{servicetime},
+            </if>
+        </set>
+        where restid = #{restid}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from waimai.restaurant where restid = #{restid}
+    </delete>
+
+</mapper>
+
